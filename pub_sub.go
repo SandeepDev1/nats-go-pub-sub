@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nats-io/nats.go"
 	"log"
+	"time"
 )
 
 func consumer(ctx context.Context) {
@@ -18,14 +19,17 @@ func consumer(ctx context.Context) {
 	fmt.Println("Connected to NATS server on port 15000")
 
 	subject := "logs"
-	messages := make(chan *nats.Msg)
+	messages := make(chan *nats.Msg, 1000)
 
 	subscription, err := nc.ChanSubscribe(subject, messages)
 	if err != nil {
 		log.Fatal("Failed to subscribe to subject:", err)
 	}
 
-	defer subscription.Unsubscribe()
+	defer func() {
+		subscription.Unsubscribe()
+		close(messages)
+	}()
 	log.Println("Subscribed to", subject)
 
 	for {
@@ -34,7 +38,7 @@ func consumer(ctx context.Context) {
 			log.Println("exiting from consumer")
 			return
 		case msg := <-messages:
-			log.Println(string(msg.Data))
+			log.Println("received", string(msg.Data))
 		}
 	}
 }
@@ -58,11 +62,10 @@ func producer(ctx context.Context) {
 		default:
 			i += 1
 			message := fmt.Sprintf("message %v", i)
+			time.Sleep(10 * time.Millisecond)
 			err = nc.Publish(subject, []byte(message))
 			if err != nil {
 				log.Println("Failed to publish message:", err)
-			} else {
-				log.Println(message)
 			}
 		}
 	}
