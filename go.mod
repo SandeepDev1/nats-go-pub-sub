@@ -1,4 +1,4 @@
-module mqWorkerPool
+module nats
 
 go 1.20
 
