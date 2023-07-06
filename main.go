@@ -15,12 +15,12 @@ func main() {
 		sigChannel := make(chan os.Signal, 1)
 		signal.Notify(sigChannel, os.Interrupt, syscall.SIGTERM)
 		<-sigChannel
+		close(sigChannel)
 		cancel()
 	}()
 
 	// create the local server
-	server := createServer()
-	defer server.Shutdown()
+	createServer()
 
 	// register the consumer
 	go consumer(ctx)

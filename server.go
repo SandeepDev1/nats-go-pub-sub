@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func createServer() *natsServer.Server {
+func createServer() {
 
 	// options to create nats server
 	opts := &natsServer.Options{
@@ -31,5 +31,4 @@ func createServer() *natsServer.Server {
 	}
 
 	log.Println("NATS server started")
-	return server
 }
